@@ -23,6 +23,9 @@ import java.io.IOException;
 public class JokeAsynTask extends AsyncTask<Pair<Context,String>,Void,String> {
     private static MyApi myApi=null;
     private Context context;
+    private String joke =null;
+    private Exception exception=null;
+    private GetJokeListener jokeListener;
 
     @Override
     protected String doInBackground(Pair<Context, String>... pairs) {
@@ -40,26 +43,42 @@ public class JokeAsynTask extends AsyncTask<Pair<Context,String>,Void,String> {
         }
 
         context=pairs[0].first;
-        String joke=pairs[0].second;
+           joke=pairs[0].second;
                 try {
                   return  myApi.sayHi(joke).execute().getData();
                 }catch (IOException e){
                     return e.getMessage();
                 }
     }
-
+    public JokeAsynTask setListener(GetJokeListener listener) {
+        this.jokeListener = listener;
+        return this;
+    }
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
 
     }
-
+     public interface GetJokeListener{
+          void onComplete(String joke,Exception e);
+     }
     @Override
     protected void onPostExecute(String s) {
-
+         if(this.jokeListener!=null){
+             this.jokeListener.onComplete(joke,exception);
+         }
         Intent intent=new Intent(context, JokeTellingActivity.class);
         intent.putExtra("theJoke",s);
         context.startActivity(intent);
+    }
+
+    @Override
+    protected void onCancelled() {
+        super.onCancelled();
+        if (this.jokeListener != null) {
+            exception = new InterruptedException("AsyncTask cancelled");
+            this.jokeListener.onComplete(null, exception);
+        }
     }
 
 

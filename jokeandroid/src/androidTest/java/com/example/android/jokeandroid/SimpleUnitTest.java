@@ -27,7 +27,7 @@ public class SimpleUnitTest {
 
     @Test
     public void TestFunction() {
-        onView((withContentDescription("main_image")));
+
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... voids) {
